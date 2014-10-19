@@ -63,7 +63,9 @@ double velocity = 0;
 //slip angle variables
 //////////////////////
 
+//SD card variables
 File dataFile;
+String DataString;
 const int chipSelect = 10;
 /*
  * Name: setup()
@@ -111,7 +113,7 @@ void setup(void)
   }
   
   dataFile = SD.open("datalog.txt", FILE_WRITE);
-  if (! datafile)
+  if (! dataFile)
   {
     Serial.println("error opening datalog.txt");
     //cannot write data
@@ -174,6 +176,8 @@ void loop()
    velocity = WHEEL_DISTANCE/(time-time_init);
   }
   
+  int velocity_rounded = int(velocity);
+  
   /******************************************
   /* ACCELERATION
   ******************************************/  
@@ -190,35 +194,35 @@ void loop()
   Serial.println("m/s^2 ");
   Serial.println();
   
-  //assign accleration to variables
+  //assign accleration to variables, convert doubles to ints
   int XAccel;
   if(event.acceleration.x <= 0) 
   {
-    XAccel = (event.acceleration.x + .005) * 100;
+    XAccel = (event.acceleration.x + .0005) * 1000;
   } 
   else
   {
-    XAccel = (event.acceleration.x - .005) * 100;
+    XAccel = (event.acceleration.x - .0005) * 1000;
   }
    
   int YAccel;
   if(event.acceleration.y <= 0) 
   {
-    YAccel = (event.acceleration.y + .005) * 100;
+    YAccel = (event.acceleration.y + .0005) * 1000;
   } 
   else
   {
-    YAccel = (event.acceleration.y - .005) * 100;
+    YAccel = (event.acceleration.y - .0005) * 1000;
   }
   
   int ZAccel;
   if(event.acceleration.x >= 0)
   {
-    ZAccel = (event.acceleration.z + .005) * 100;
+    ZAccel = (event.acceleration.z + .0005) * 1000;
   } 
   else
   {
-    ZAccel = (event.acceleration.z - .005) * 100;
+    ZAccel = (event.acceleration.z - .0005) * 1000;
   }
   
   /******************************************
@@ -231,14 +235,23 @@ void loop()
   Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
   Serial.print("Z: "); Serial.print((int)gyro.data.z); Serial.print(" ");
   Serial.println("degrees/second");
-
+  
+  //Assign variables to hold 
+  int XAxisRotation = (int)gyro.data.x;
+  int YAxisRotation = (int)gyro.data.y;
+  int ZAxisRotation = (int)gyro.data.z;
+  
+  
+  
   //some calculation for slip angle....
   
   /******************************************
   /* WRITE TO SD CARD
   ******************************************/  
-  DataString = String(XAccel) + " \t" + String(YAccel) + " /t" + String(ZAccel) +
-                              " \t" + velocity;
+  DataString = String("Acceleration ") + String(XAccel) + " \t" + String(YAccel) + " /t" + String(ZAccel) +
+                              " \t" + String("Velocity ") + velocity_rounded + " \t" + String("Gyro ") +
+                              String(XAxisRotation) + " \t" + String(YAxisRotation) + " \t" + 
+                              String(ZAxisRotation) + " \t" + String("Steering Angle ") + String(steerPotReading);
                               
   if (dataFile)
   {

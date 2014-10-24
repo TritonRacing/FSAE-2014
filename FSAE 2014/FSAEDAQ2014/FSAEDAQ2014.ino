@@ -1,19 +1,17 @@
 /**************************************************************************/
 /*!
-    @file     Adafruit_MMA8451.h
-    @author   K. Townsend (Adafruit Industries)
-    @license  BSD (see license.txt)
-
-    This is an example for the Adafruit MMA8451 Accel breakout board
-    ----> https://www.adafruit.com/products/2019
-
-    Adafruit invests time and resources providing this open source code,
-    please support Adafruit and open-source hardware by purchasing
-    products from Adafruit!
-
-    @section  HISTORY
-
-    v1.0  - First release
+    @file     FSAEDAQ20124.ino
+    @author   Triton Racing Research and Development 2014
+    
+    Uses MMA8451 Accelerometer, L3GD20 Gyroscope, Hall Effect analog sensor,
+    and a potentiometer to gather data from cars. Data gathered: accleration
+    (MMA8451), velocity (Hall Effect), slip angle (L3DG20 and potentiometer).
+    
+    Data is gathered in one string, exported to Excel document, formulas
+    run to turn values into meaningful data.
+    
+    NOTE: Serial outputs and instantiations are not required and used
+    for debugging.
 */
 /**************************************************************************/
 
@@ -43,8 +41,8 @@
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
-//Analog pin for hall effect magnetic sensor
-const int HALL_EFFECT_PIN = A2;
+//Digital pin for hall effect magnetic sensor
+const int HALL_EFFECT_PIN = 2;
 
 //Analog pin for steering angle
 const int STEER_POT_PIN = A3;
@@ -67,6 +65,7 @@ double velocity = 0;
 File dataFile;
 String DataString;
 const int chipSelect = 10;
+
 /*
  * Name: setup()
  * Purpose: instantiate serial port, check for proper
@@ -86,18 +85,12 @@ void setup(void)
   }
   //comment/uncomment for different senitivities (DPS = degrees/second)
   if (!gyro.begin(gyro.L3DS20_RANGE_250DPS))
-  //while (!gyro.begin(gyro.L3DS20_RANGE_500DPS))
-  //while (!gyro.begin(gyro.L3DS20_RANGE_2000DPS))
+  //if (!gyro.begin(gyro.L3DS20_RANGE_500DPS))
+  //if (!gyro.begin(gyro.L3DS20_RANGE_2000DPS))
   {
     Serial.println("Unable to initialize the L3GD20 Gyro. Check your wiring!");
   }
-  //gather readings from hall effect sensor to check calibration
-  hallEffectReading = analogRead(HALL_EFFECT_PIN);
-  if ((hallEffectReading<1000) || (hallEffectReading>200))
-  {
-    Serial.println("Hall Effect Sensor is not calibrated correctly");
-  }
-  
+ 
   Serial.println("MMA8451 found!");
   Serial.println("L3DG20 found!");
   Serial.println("Hall Effect Sensor found!");
@@ -158,24 +151,26 @@ void loop()
   /* VELOCITY
   ******************************************/
   hallEffectReading = analogRead(HALL_EFFECT_PIN);
-  if (hallEffectReading < 200)
+  if (hallEffectReading == )
   {
    time_init = millis();
    //wait for magnet to reach sensor, but wait to check count isn't taken
-   //from same magnet
-   while (hallEffectReading < 200)
+   //from same magnet twice
+   while (hallEffectReading == 1)
    {
      hallEffectReading = analogRead(HALL_EFFECT_PIN);
    }
-   while (hallEffectReading > 1000)
+   while (hallEffectReading == 0)
    {
      hallEffectReading = analogRead(HALL_EFFECT_PIN);
    }
+   //second magnet has passed, take timestamp
    time = millis();
    //rate = distance/time
    velocity = WHEEL_DISTANCE/(time-time_init);
   }
   
+  //integer required to print to datastream
   int velocity_rounded = int(velocity);
   
   /******************************************
@@ -248,10 +243,12 @@ void loop()
   /******************************************
   /* WRITE TO SD CARD
   ******************************************/  
+  //concatenate all data into one string to print to SD
   DataString = String("Acceleration ") + String(XAccel) + " \t" + String(YAccel) + " /t" + String(ZAccel) +
                               " \t" + String("Velocity ") + velocity_rounded + " \t" + String("Gyro ") +
                               String(XAxisRotation) + " \t" + String(YAxisRotation) + " \t" + 
-                              String(ZAxisRotation) + " \t" + String("Steering Angle ") + String(steerPotReading);
+                              String(ZAxisRotation) + " \t" + String("Steering Angle ") + String(steerPotReading) + 
+                              " \t";
                               
   if (dataFile)
   {

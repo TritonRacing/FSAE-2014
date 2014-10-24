@@ -42,7 +42,7 @@
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 //Digital pin for hall effect magnetic sensor
-const int HALL_EFFECT_PIN = 2;
+const int HALL_EFFECT_PIN = 3;
 
 //Analog pin for steering angle
 const int STEER_POT_PIN = A3;
@@ -53,7 +53,7 @@ int steerPotReading = 0;
 
 //velocity variables
 //WHEEL_DISTANCE based off of distance between magnets on wheel
-const int WHEEL_DISTANCE = 12;
+const double WHEEL_DISTANCE = 14.25;
 int time = 0;
 int time_init = 0;
 double velocity = 0;
@@ -150,19 +150,19 @@ void loop()
   /******************************************
   /* VELOCITY
   ******************************************/
-  hallEffectReading = analogRead(HALL_EFFECT_PIN);
-  if (hallEffectReading == )
+  hallEffectReading = digitalRead(HALL_EFFECT_PIN);
+  if (hallEffectReading == 1)
   {
    time_init = millis();
    //wait for magnet to reach sensor, but wait to check count isn't taken
    //from same magnet twice
    while (hallEffectReading == 1)
    {
-     hallEffectReading = analogRead(HALL_EFFECT_PIN);
+     hallEffectReading = digitalRead(HALL_EFFECT_PIN);
    }
    while (hallEffectReading == 0)
    {
-     hallEffectReading = analogRead(HALL_EFFECT_PIN);
+     hallEffectReading = digitalRead(HALL_EFFECT_PIN);
    }
    //second magnet has passed, take timestamp
    time = millis();
@@ -224,7 +224,7 @@ void loop()
   /* SLIP ANGLE
   ******************************************/
   gyro.read();
-  steerPotReading = analogRead(STEER_POT_PIN);
+  //steerPotReading = analogRead(STEER_POT_PIN);
   //add vars, convert to int (look at accel)
   Serial.print("X: "); Serial.print((int)gyro.data.x);   Serial.print(" ");
   Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
@@ -245,10 +245,10 @@ void loop()
   ******************************************/  
   //concatenate all data into one string to print to SD
   DataString = String("Acceleration ") + String(XAccel) + " \t" + String(YAccel) + " /t" + String(ZAccel) +
-                              " \t" + String("Velocity ") + velocity_rounded + " \t" + String("Gyro ") +
+                              " \t" + String("Velocity ") + velocity + " \t" + String("Gyro ") +
                               String(XAxisRotation) + " \t" + String(YAxisRotation) + " \t" + 
-                              String(ZAxisRotation) + " \t" + String("Steering Angle ") + String(steerPotReading) + 
-                              " \t";
+                              String(ZAxisRotation) + " \t" + "Time: " + millis()/*String("Steering Angle ") + String(steerPotReading) + 
+                              " \t"*/;
                               
   if (dataFile)
   {

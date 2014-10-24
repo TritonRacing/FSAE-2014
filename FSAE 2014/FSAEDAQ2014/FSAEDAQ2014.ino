@@ -125,24 +125,24 @@ void setup(void)
 
 /*
  * Name: Acceleration
- *
- *
- *
+ * MMA8451 Accelerometer returns values based on code
+ * written in libraries. Values are returned as doubles
+ * and are convertd to ints to be concatenated into strings.
 */
 
 /*
  * Name: Slip Angle
- *
- *
- *
- *
+ * Potentiometer connected to detect steering angle
+ * is coupled with data from the L3DG20 Gyroscope
+ * to calculate slip angle of vehicle. Calculations are
+ * done in post-processing Excell formulas.
 */
 
 /*
  * Name: Write to SD
- *
- *
- *
+ * Interact with SD card libraries to print out a 
+ * concatenated string with data types. String concatenation
+ * is timed stamped with time of Arduino startup.
 */
 
 void loop()

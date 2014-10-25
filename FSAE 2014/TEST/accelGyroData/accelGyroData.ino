@@ -41,13 +41,6 @@
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
-//Analog pin for hall effect magnetic sensor
-HALL_EFFECT_PIN = A2;
-
-//Analog pin for steering angle
-STEER_POT_PIN = A3;
-
-
 void setup(void) 
 {
   Serial.begin(9600);
@@ -60,7 +53,7 @@ void setup(void)
     Serial.println("Couldnt start MMA8451 Accel!");
   }
   //comment/uncomment for different senitivities (DPS = degrees/second)
-  while (!gyro.begin(gyro.L3DS20_RANGE_250DPS))
+  if (!gyro.begin(gyro.L3DS20_RANGE_250DPS))
   //while (!gyro.begin(gyro.L3DS20_RANGE_500DPS))
   //while (!gyro.begin(gyro.L3DS20_RANGE_2000DPS))
   {

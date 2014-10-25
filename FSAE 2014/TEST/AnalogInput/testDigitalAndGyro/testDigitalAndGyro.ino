@@ -30,6 +30,8 @@
  #include <Wire.h>
  #include <Adafruit_L3GD20.h>
  
+ 
+ //wired on 4, 5, 6, 7 on digital pins on Arduino mega
  #ifdef USE_I2C
   // The default constructor uses I2C
   Adafruit_L3GD20 gyro;
@@ -61,7 +63,7 @@ void setup() {
 
 void loop() {
   // read the value from the sensor:
-  Serial.println("Printing data!");
+  //Serial.println("Printing data!");
   sensorValue = digitalRead(sensorPin);    
   Serial.println("Sensor Value: ");
   Serial.print(sensorValue);
@@ -71,10 +73,10 @@ void loop() {
   
     gyro.read();
   //add vars, convert to int (look at accel)
-  Serial.print("X: "); Serial.print((int)gyro.data.x);   Serial.print(" ");
-  Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
-  Serial.print("Z: "); Serial.print((int)gyro.data.z); Serial.print(" ");
-  Serial.println("degrees/second");
+  //Serial.print("X: "); Serial.print((int)gyro.data.x);   Serial.print(" ");
+  //Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
+  //Serial.print("Z: "); Serial.print((int)gyro.data.z); Serial.print(" ");
+  //Serial.println("degrees/second");
   
   //Assign variables to hold 
   int XAxisRotation = (int)gyro.data.x;
@@ -83,5 +85,5 @@ void loop() {
   
   
   
-  delay(500);  
+  delay(50);  
 }

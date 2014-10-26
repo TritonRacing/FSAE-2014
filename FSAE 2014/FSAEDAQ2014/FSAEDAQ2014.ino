@@ -226,6 +226,6 @@ void loop()
   dataFile.flush(); //save after every line
 
   //Delay based off of max RPM (2000RPM at 80mph)
-  delay(330);
+  delay(33);
 }
 

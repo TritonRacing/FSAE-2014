@@ -73,46 +73,47 @@ const int chipSelect = 10;
  */
 void setup(void) 
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
-  Serial.println("FSAE TRITON RACING DAQ 2014");
-  Serial.println("Acceleration, Velocity, Slip Angle");
+  //Serial.println("FSAE TRITON RACING DAQ 2014");
+  //Serial.println("Acceleration, Velocity, Slip Angle");
 
   //check sensors for correct instantiation
   if (! mma.begin()) 
   {
-    Serial.println("Couldnt start MMA8451 Accel!");
+    //Serial.println("Couldnt start MMA8451 Accel!");
   }
   //comment/uncomment for different senitivities (DPS = degrees/second)
   if (!gyro.begin(gyro.L3DS20_RANGE_250DPS))
     //if (!gyro.begin(gyro.L3DS20_RANGE_500DPS))
     //if (!gyro.begin(gyro.L3DS20_RANGE_2000DPS))
   {
-    Serial.println("Unable to initialize the L3GD20 Gyro. Check your wiring!");
+    //Serial.println("Unable to initialize the L3GD20 Gyro. Check your wiring!");
   }
-
-  Serial.println("MMA8451 found!");
-  Serial.println("L3DG20 found!");
-  Serial.println("Hall Effect Sensor found!");
-
+  else
+  {
+    //Serial.println("MMA8451 found!");
+    //Serial.println("L3DG20 found!");
+    //Serial.println("Hall Effect Sensor found!");  
+  }
   //range can take values of 2G, 4G, and 8G
   mma.setRange(MMA8451_RANGE_4_G);
 
   pinMode(SS, OUTPUT);
   if (!SD.begin(10,11, 12, 13))
   {
-    Serial.println("Card failed to instantiate");
+    //Serial.println("Card failed to instantiate");
     return;
   }
 
   dataFile = SD.open("datalog.txt", FILE_WRITE);
   if (! dataFile)
   {
-    Serial.println("error opening datalog.txt");
+    //Serial.println("error opening datalog.txt");
     //cannot write data
   }
 
-  Serial.println("Card initialized! Outputs written to 'datalog.txt'");
+  //Serial.println("Card initialized! Outputs written to 'datalog.txt'");
 }
 
 /*
@@ -180,17 +181,17 @@ void loop()
   mma.getEvent(&event);
 
   /* Display the results (acceleration is measured in m/s^2) */
-  Serial.print("X: \t"); 
-  Serial.print(event.acceleration.x); 
-  Serial.print("\t");
-  Serial.print("Y: \t"); 
-  Serial.print(event.acceleration.y); 
-  Serial.print("\t");
-  Serial.print("Z: \t"); 
-  Serial.print(event.acceleration.z); 
-  Serial.print("\t");
-  Serial.println("m/s^2 ");
-  Serial.println();
+  //Serial.print("X: \t"); 
+  //Serial.print(event.acceleration.x); 
+  //Serial.print("\t");
+  //Serial.print("Y: \t"); 
+  //Serial.print(event.acceleration.y); 
+  //Serial.print("\t");
+  //Serial.print("Z: \t"); 
+  //Serial.print(event.acceleration.z); 
+  //Serial.print("\t");
+  //Serial.println("m/s^2 ");
+  //Serial.println();
 
   /******************************************
   /* SLIP ANGLE
@@ -198,7 +199,7 @@ void loop()
   gyro.read();
   //steerPotReading = analogRead(STEER_POT_PIN);
   //add vars, convert to int (look at accel)
-  Serial.print("X: "); 
+  /*Serial.print("X: "); 
   Serial.print((int)gyro.data.x);   
   Serial.print(" ");
   Serial.print("Y: "); 
@@ -208,6 +209,7 @@ void loop()
   Serial.print((int)gyro.data.z); 
   Serial.print(" ");
   Serial.println("degrees/second");
+  */
   //some calculation for slip angle....
 
   /******************************************
@@ -224,6 +226,6 @@ void loop()
   dataFile.flush(); //save after every line
 
   //Delay based off of max RPM (2000RPM at 80mph)
-  delay(33);
+  delay(330);
 }
 

@@ -37,6 +37,9 @@
   Adafruit_L3GD20 gyro(GYRO_CS, GYRO_DO, GYRO_DI, GYRO_CLK);
 #endif
 
+const int GYRO_OFFSET_X = -6.556;
+const int GYRO_OFFSET_Y = 8.544;
+const int GYRO_OFFSET_Z = 0.105;
 
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
@@ -62,12 +65,17 @@ void setup(void)
   Serial.println("MMA8451 found!");
   Serial.println("L3DG20 found!");
   
-  mma.setRange(MMA8451_RANGE_2_G);
+  mma.setRange(MMA8451_RANGE_8_G);
   
   Serial.print("Range = "); Serial.print(2 << mma.getRange());  
   Serial.println("G");
   
+  Serial.print("X: ");Serial.print("Y: ");Serial.print("Z: ");Serial.print(" ");
+  
+  Serial.print("X: ");Serial.print("Y: ");Serial.print("Z: ");
+  Serial.println("");
 }
+
 
 void loop()
 {
@@ -76,14 +84,18 @@ void loop()
   /* Get a new sensor event */ 
   sensors_event_t event; 
   mma.getEvent(&event);
+  
+  gyro.read();
 
   /* Display the results (acceleration is measured in m/s^2) */
-  Serial.print("X: \t"); Serial.print(event.acceleration.x); Serial.print("\t");
-  Serial.print("Y: \t"); Serial.print(event.acceleration.y); Serial.print("\t");
-  Serial.print("Z: \t"); Serial.print(event.acceleration.z); Serial.print("\t");
-  Serial.println("m/s^2 ");
-  Serial.println();
+  Serial.print(event.acceleration.x);Serial.print("\t");
+  Serial.print(event.acceleration.y);Serial.print("\t");
+  Serial.print(event.acceleration.z);Serial.print("\t");
   
+  Serial.print(gyro.data.x+GYRO_OFFSET_X);Serial.print("\t");
+  Serial.print(gyro.data.y+GYRO_OFFSET_Y);Serial.print("\t");
+  Serial.print(gyro.data.z+GYRO_OFFSET_Z);Serial.print("\t");
+  Serial.println("");
   
-  delay(33);
+  delay(200);
 }

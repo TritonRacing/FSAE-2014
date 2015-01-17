@@ -1,6 +1,6 @@
 /*****************************************************************
  * File Name:     FSAEDAQ2014_GPS_LOGGING.ino
- * Written by:    Aman Azad
+ * Written by:    Aman Azad (2014-2015 FSAE DAQ Team)
  * Description:   Use interupts to recieve GPS NMEA Sentences
                   once per second, parse sentences (comma 
                   delimited), then log into SD card.
@@ -83,6 +83,7 @@ uint8_t parseHex(char c)
 *****************************************************************/
 void error()
 {
+  /*
   if (SD.errorCode())
   {
     putstring("SD error: ");
@@ -90,6 +91,7 @@ void error()
     Serial.print(',');
     Serial.println(card.errorData(), HEX);
   }
+  */
 }
 
 /*****************************************************************
@@ -118,7 +120,7 @@ void setup()
   char filename[15]; /* string used to hold name of file log data
                         is being sent to */
   strcpy(filename, "GPSLOG00.TXT");
-  for (uint8_t index = 0; index < 100; i++)
+  for (uint8_t index = 0; index < 100; index++)
   {
     /* update new log file names to avoid overwrites */
     filename[6] = '0' + index/10;
@@ -177,7 +179,7 @@ void loop()
   }
   
   /* If a sentence recieved, check the checksum and parse it */
-  if (GPS.newNMEArecieved())
+  if (GPS.newNMEAreceived())
   {
     /* printing out NMEA sentence prevents reading new data! */
     /* Serial.println(GPS.lastNMEA()); */ /* This sets
@@ -204,7 +206,7 @@ void loop()
     uint8_t stringsize = strlen(stringptr); /* hold value of length
                                                of sentence */
     if (stringsize != logfile.write((uint8_t *)stringptr, stringsize))
-    {
+    {  
       error(); /* could not print to SD card */
     }
     if (strstr(stringptr, "RMC"))

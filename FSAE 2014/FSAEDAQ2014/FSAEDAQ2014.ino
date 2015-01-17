@@ -38,6 +38,11 @@ Adafruit_L3GD20 gyro(GYRO_CS, GYRO_DO, GYRO_DI, GYRO_CLK);
 #endif
 
 
+//delay time in hertz
+//Set Baud Rate
+const int hertz = 20;
+const int DELAY_TIME = 1000/hertz;
+
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
@@ -58,6 +63,7 @@ int time = 0;
 int time_init = 0;
 double velocity = 0;
 
+
 //slip angle variables
 //////////////////////
 
@@ -66,6 +72,8 @@ File dataFile;
 String DataString;
 const int chipSelect = 10;
 
+
+boolean same_magnet = false;
 /*
  * Name: setup()
  * Purpose: instantiate serial port, check for proper
@@ -97,7 +105,7 @@ void setup(void)
     //Serial.println("Hall Effect Sensor found!");  
   }
   //range can take values of 2G, 4G, and 8G
-  mma.setRange(MMA8451_RANGE_4_G);
+  mma.setRange(MMA8451_RANGE_8_G);
 
   pinMode(SS, OUTPUT);
   if (!SD.begin(10,11, 12, 13))
@@ -113,7 +121,13 @@ void setup(void)
     //cannot write data
   }
 
-  //Serial.println("Card initialized! Outputs written to 'datalog.txt'");
+  DataString = String("Acceleration (g's) | Velocity (ft/s)| Gyroscope (deg/s)");
+  dataFile.println(DataString);
+  dataFile.flush();
+  
+  DataString = String("X"+"\t"+"Y"+"\t"+"Z"+"\t"+"FT/S"+"\t"+"X"+"\t"+"Y"+"\t"+"Z"+"\t"+"ms");
+  dataFile.println(DataString);
+  dataFile.flush();
 }
 
 /*
@@ -152,23 +166,34 @@ void loop()
   /* VELOCITY
    ******************************************/
   hallEffectReading = digitalRead(HALL_EFFECT_PIN);
-  if (hallEffectReading == 1)
+
+  if ((hallEffectReading == 1) && (!same_magnet)
   {
+    //take initial time stamp
     time_init = millis();
-    //wait for magnet to reach sensor, but wait to check count isn't taken
-    //from same magnet twice
-    while (hallEffectReading == 1)
+    same_magnet = true;
+    
+    if (hallEffectReading == 0)
     {
-      hallEffectReading = digitalRead(HALL_EFFECT_PIN);
+      same_magnet = false;
     }
-    while (hallEffectReading == 0)
+    else if (same_magnet)
     {
-      hallEffectReading = digitalRead(HALL_EFFECT_PIN);
+      same_magnet = true;
     }
-    //second magnet has passed, take timestamp
-    time = millis();
-    //rate = distance/time
-    velocity = WHEEL_DISTANCE/(time-time_init);
+    
+    if (!same_magnet)
+    {
+      if (hallEffectReading == 1)
+      {
+        time = millis();
+        
+        velocity = WHEEL_DISTANE/(time-time_init);
+        
+        same_magnet = false;
+      }
+    }
+    
   }
 
   /******************************************
@@ -180,52 +205,25 @@ void loop()
   sensors_event_t event; 
   mma.getEvent(&event);
 
-  /* Display the results (acceleration is measured in m/s^2) */
-  //Serial.print("X: \t"); 
-  //Serial.print(event.acceleration.x); 
-  //Serial.print("\t");
-  //Serial.print("Y: \t"); 
-  //Serial.print(event.acceleration.y); 
-  //Serial.print("\t");
-  //Serial.print("Z: \t"); 
-  //Serial.print(event.acceleration.z); 
-  //Serial.print("\t");
-  //Serial.println("m/s^2 ");
-  //Serial.println();
-
   /******************************************
   /* SLIP ANGLE
    ******************************************/
   gyro.read();
-  //steerPotReading = analogRead(STEER_POT_PIN);
-  //add vars, convert to int (look at accel)
-  /*Serial.print("X: "); 
-  Serial.print((int)gyro.data.x);   
-  Serial.print(" ");
-  Serial.print("Y: "); 
-  Serial.print((int)gyro.data.y);   
-  Serial.print(" ");
-  Serial.print("Z: "); 
-  Serial.print((int)gyro.data.z); 
-  Serial.print(" ");
-  Serial.println("degrees/second");
-  */
+
   //some calculation for slip angle....
 
   /******************************************
   /* WRITE TO SD CARD
    ******************************************/
   //concatenate all data into one string to print to SD
-  DataString = String("Acceleration ") + event.acceleration.x + " \t" + event.acceleration.y + " \t" + event.acceleration.z +
-    " \t" + String("Velocity ") + velocity + " \t" + String("Gyro ") +
-    gyro.data.x + " \t" + gyro.data.y + " \t" + 
-    gyro.data.z + " \t" + "Time: " + millis()/*String("Steering Angle ") + String(steerPotReading) + 
-   " \t"*/;
-
+  DataString = event.acceleration.x + "\t" + event.acceleration.y + "\t" + event.acceleration.z + "\t" +
+               "\t" + velocity + "\t" + gyro.data.x + "\t" + gyro.data.y + "\t" + gyro.data.z + "\t" +
+               "\t" + millis();
+               
   dataFile.println(DataString);
   dataFile.flush(); //save after every line
 
   //Delay based off of max RPM (2000RPM at 80mph)
-  delay(33);
+  delay(DELAY_TIME);
 }
 

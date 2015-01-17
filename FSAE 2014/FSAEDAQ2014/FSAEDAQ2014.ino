@@ -1,19 +1,17 @@
-/**************************************************************************/
-/*!
- @file     FSAEDAQ20124.ino
- @author   Triton Racing Research and Development 2014
+/**************************************************************************
+ * File name:     FSAEDAQ20124.ino
+ * Written By:    Aman Azad (2014-2015 FSAE DAQ Team)
+ * Description:   Uses MMA8451 Accelerometer, L3GD20 Gyroscope, Hall
+                  Effect analog sensor, and a potentiometer to gather data
+                  from cars. Data gathered: accleration (MMA8451), 
+                  velocity (Hall Effect), slip angle (L3DG20 and potentiometer).
  
- Uses MMA8451 Accelerometer, L3GD20 Gyroscope, Hall Effect analog sensor,
- and a potentiometer to gather data from cars. Data gathered: accleration
- (MMA8451), velocity (Hall Effect), slip angle (L3DG20 and potentiometer).
+                  Data is gathered in one string, exported to Excel document,
+                  formulas run to turn values into meaningful data.
  
- Data is gathered in one string, exported to Excel document, formulas
- run to turn values into meaningful data.
- 
- NOTE: Serial outputs and instantiations are not required and used
- for debugging.
- */
-/**************************************************************************/
+                  NOTE: Serial outputs and instantiations are not required 
+                  and used for debugging.
+**************************************************************************/
 
 #include <Wire.h>
 #include <Adafruit_MMA8451.h>

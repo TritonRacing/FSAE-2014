@@ -41,12 +41,12 @@ Adafruit_GPS GPS(&mySerial); /* assign address of mySerial to new
 
 /* Set to true only, only log to SD if GPS has a fix, for debugging,
    keep false */
-#define LOG_FIXONLY false
+#define LOG_FIXONLY true
 
 /* Set the pins used */
 #define chipSelect 10
 
-File logfile;
+File logfile; /* File which data is written to */
 
 /*****************************************************************
  * Function: parseHex
@@ -92,6 +92,10 @@ void error()
     Serial.println(card.errorData(), HEX);
   }
   */
+  while(1)
+  {
+  }
+  /* infinite loop, prevent going on */
 }
 
 /*****************************************************************
@@ -101,8 +105,11 @@ void error()
 *****************************************************************/
 void setup()
 {
-  Serial.begin(115200); /* select fastest baud rate to not drop
+  if (GPSECHO)
+  {
+    Serial.begin(115200); /* select fastest baud rate to not drop
                            characters from GPS sentences */
+  }
   Serial.println("\r\nFSAE DAQ GPS Logger");
   
   pinMode(10, OUTPUT); /* set default chip select to output 
@@ -146,30 +153,46 @@ void setup()
                       Serial baud rate */
   /* Uncomment this line to turn on RMC (recommended minimum) and
      GGA (fix data) including altitude */
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  /* GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); */
   /* Uncomment this line to turn on only the minimum recommended data */
-  /* GPS.sendCommand(PTK_SET_NMEA_OUTPUT_RMCONLY); */
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
   /* For logging, best to keep at either these settings to prevent file
      size overflow */
   
   /* Set the update rate */
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); /* 1 or 5hz update rates */
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ); /* 1 or 5hz update rates */
+  
+  /*????????????????????????????????????????????????????????????????????
+   NEWLY ADDED, NOT TESTED, MIGHT BE SOURCE OF ERRORS IN SAVING 
+  ?????????????????????????????????????????????????????????????????????*/
+  GPS.sendCommand(PMTK_API_SET_FIX_CTL_5HZ);
   
   /* Turn off updates on antenna status, if the firmware permits it */
-  GPS.sendCommand(PGCMD_NOANTENNA);
+  GPS.sendCommand(PGCMD_ANTENNA);
   
   Serial.println("Ready!");
 }
 
 /*****************************************************************
  * Function:     loop
- * Description:  Main loop program
+ * Description:  Main Loop, grab most recent GPS sentence and
+                 flush through to SD card.
  * Parameters:   None
 *****************************************************************/
 void loop()
 {
+  if (GPSECHO)
+  {
+    Serial.begin(115200);
+  }
   char c = GPS.read();
-  
+
+  float degree; /* holds the correct longitude/latitude to be 
+               passed into the .kml file */
+  float degreeWhole; /* holds the whole number portion of the 
+                      latitude/longitude value */
+  float degreeDecimal; /* Holds the decimal part of the degree */
+    
   if (GPSECHO)
   {
     if (c)
@@ -199,21 +222,57 @@ void loop()
       return; /* skip this sentence, wait for another */
     }
     
-    /* Proceed with logging */
-    Serial.println("LOGGING");
+    /* Proceed with parsing data into Google Earths .kml file format
+       of Longitude, Latitude, Altitude. Values will be stored in this
+       format to the SD card:
+       
+       Longitude,Latitude,Altitude Longitude,Latitude,Altitude
+       
+       Note comma delimiters between data points, space delimiters
+       between data sets.
+       
+       For example NMEA Sentence value of  x = 3050.1784,
+       degreeWhole = float(int(3050.1784)) = 30
+       degreeDecimal = (3050.1784-(30*100))/60 = .8363 //convert minutes to 
+                                                       //fraction of degree
+       degree = 30 + .8363 = 30.8363 //correct value for google earth
+       
+       If in longitude we're in Southern Hemisphere, change value to negative
+       If in latitude we're in Western Hemisphere, change value to negative
+    */
+    degreeWhole = float(int(GPS.longitude/100));
+    degreeDecimal = (GPS.longitude - degreeWhole*100)/60;
+    degree = degreeWhole + degreeDecimal;
     
-    char *stringptr = GPS.lastNMEA();  /* hold value of sentence */
-    uint8_t stringsize = strlen(stringptr); /* hold value of length
-                                               of sentence */
-    if (stringsize != logfile.write((uint8_t *)stringptr, stringsize))
-    {  
-      error(); /* could not print to SD card */
-    }
-    if (strstr(stringptr, "RMC"))
+    if (GPS.lon == 'W')
     {
-      /* RMC found in string (passed in string pointer) */
-      logfile.flush(); /* save to logfile */
+      /* check if in western hemisphere*/
+      degree = (-1)*degree;
     }
+    
+    Serial.print("LOGGING LONGITUDE: ");
+    Serial.println(degree);
+    /* Longitude calculated, store to SD Card */
+    logfile.print(degree, 4); /* write decimal value */
+    logfile.print(","); /* comma delimter */
+    
+    /* Calculate Latitude */
+    degreeWhole = float(int(GPS.latitude/100));
+    degreeDecimal = (GPS.latitude - degreeWhole*100)/60;
+    degree = degreeWhole + degreeDecimal;
+    
+    if (GPS.lat == 'S')
+    {
+      /* check if in southern hemisphere */
+      degree = (-1)*degree;
+    }
+    Serial.print("LOGGING LATITUDE: ");
+    Serial.println(degree);
+    /* Latitude calculated, store to SD Card */
+    logfile.print(degree, 4);
+    logfile.println("");
+    
+    logfile.flush();
     Serial.println();
   }
 }

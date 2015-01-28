@@ -8,7 +8,9 @@
  
                   Data is gathered in one string, exported to Excel document,
                   formulas run to turn values into meaningful data.
- 
+                   
+                  Runs on the Mega
+                  
                   NOTE: Serial outputs and instantiations are not required 
                   and used for debugging.
 **************************************************************************/

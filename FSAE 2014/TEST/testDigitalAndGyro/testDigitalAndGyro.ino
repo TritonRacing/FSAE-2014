@@ -73,11 +73,10 @@ void loop() {
   
     gyro.read();
   //add vars, convert to int (look at accel)
-  //Serial.print("X: "); Serial.print((int)gyro.data.x);   Serial.print(" ");
-  //Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
-  //Serial.print("Z: "); Serial.print((int)gyro.data.z); Serial.print(" ");
-  //Serial.println("degrees/second");
-  
+  Serial.print("X: "); Serial.print((int)gyro.data.x);   Serial.print(" ");
+  Serial.print("Y: "); Serial.print((int)gyro.data.y);   Serial.print(" ");
+  Serial.print("Z: "); Serial.print((int)gyro.data.z); Serial.print(" ");
+  Serial.println("degrees/second");
   //Assign variables to hold 
   int XAxisRotation = (int)gyro.data.x;
   int YAxisRotation = (int)gyro.data.y;
@@ -85,5 +84,5 @@ void loop() {
   
   
   
-  delay(50);  
+  delay(100);  
 }

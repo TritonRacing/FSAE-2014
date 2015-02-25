@@ -37,7 +37,7 @@ Adafruit_GPS GPS(&mySerial); /* assign address of mySerial to new
 
 /* Set GPSECHO to 'false' to tourn off echoing the GPS data to the
    Serial Console */
-#define GPSECHO false
+#define GPSECHO true
 
 /* Set to true only, only log to SD if GPS has a fix, for debugging,
    keep false */
@@ -45,6 +45,12 @@ Adafruit_GPS GPS(&mySerial); /* assign address of mySerial to new
 
 /* Set the pins used */
 #define chipSelect 10
+
+float degree; /* holds the correct longitude/latitude to be 
+                 passed into the .kml file */
+float degreeWhole; /* holds the whole number portion of the 
+                      latitude/longitude value */
+float degreeDecimal; /* Holds the decimal part of the degree */
 
 File logfile; /* File which data is written to */
 
@@ -105,11 +111,8 @@ void error()
 *****************************************************************/
 void setup()
 {
-  if (GPSECHO)
-  {
-    Serial.begin(115200); /* select fastest baud rate to not drop
+  Serial.begin(115200); /* select fastest baud rate to not drop
                            characters from GPS sentences */
-  }
   Serial.println("\r\nFSAE DAQ GPS Logger");
   
   pinMode(10, OUTPUT); /* set default chip select to output 
@@ -153,14 +156,14 @@ void setup()
                       Serial baud rate */
   /* Uncomment this line to turn on RMC (recommended minimum) and
      GGA (fix data) including altitude */
-  /* GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); */
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   /* Uncomment this line to turn on only the minimum recommended data */
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
+  /* GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY); */
   /* For logging, best to keep at either these settings to prevent file
      size overflow */
   
   /* Set the update rate */
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ); /* 1 or 5hz update rates */
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); /* 1 or 5hz update rates */
   
   /* Turn off updates on antenna status, if the firmware permits it */
   GPS.sendCommand(PGCMD_NOANTENNA);
@@ -177,13 +180,7 @@ void setup()
 void loop()
 {
   char c = GPS.read();
-
-  float degree; /* holds the correct longitude/latitude to be 
-               passed into the .kml file */
-  float degreeWhole; /* holds the whole number portion of the 
-                      latitude/longitude value */
-  float degreeDecimal; /* Holds the decimal part of the degree */
-    
+  
   if (GPSECHO)
   {
     if (c)
@@ -261,9 +258,17 @@ void loop()
     Serial.println(degree);
     /* Latitude calculated, store to SD Card */
     logfile.print(degree, 4);
-    logfile.println("");
+    logfile.print(",");
+
+    Serial.print("LOGGING ALTITUDE: ");
+    Serial.println(GPS.altitude);
+    /* Altitude already calculated, store to SD Card, space delimit
+       data sets */
+    logfile.print(GPS.altitude);
+    logfile.print(" "); /* format with one space between data sets */
     
-    logfile.flush();
+    logfile.flush(); /* force save */
+    //6logfile.close();
     Serial.println();
   }
 }

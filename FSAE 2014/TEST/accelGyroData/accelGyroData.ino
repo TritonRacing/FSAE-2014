@@ -37,9 +37,14 @@
   Adafruit_L3GD20 gyro(GYRO_CS, GYRO_DO, GYRO_DI, GYRO_CLK);
 #endif
 
-const int GYRO_OFFSET_X = -6.556;
-const int GYRO_OFFSET_Y = 8.544;
-const int GYRO_OFFSET_Z = 0.105;
+const int GYRO_OFFSET_X = 0;
+const int GYRO_OFFSET_Y = 0;
+const int GYRO_OFFSET_Z = 0;
+
+double gyro_x_offset;
+double gyro_y_offset;
+double gyro_z_offset;
+
 
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
@@ -48,7 +53,10 @@ void setup(void)
 {
   Serial.begin(9600);
   
-  Serial.println("Accelerometer and Gyro Data");
+  double deg_to_rad_offset = 0.0174;
+
+  
+  Serial.println("Accelerometer(m/s^2) and Gyro(rad/s)");
   
   //check both sensors for correct instantiation
   while (! mma.begin()) 
@@ -74,28 +82,42 @@ void setup(void)
   
   Serial.print("X: ");Serial.print("Y: ");Serial.print("Z: ");
   Serial.println("");
+  
+  gyro.read();
+  
+  gyro_x_offset = gyro.data.x*deg_to_rad_offset;
+  gyro_y_offset = gyro.data.y*deg_to_rad_offset;
+  gyro_z_offset = gyro.data.z*deg_to_rad_offset;
+
 }
 
 
 void loop()
 {
   // Read the 'raw' data in 14-bit counts
+
   mma.read();
   /* Get a new sensor event */ 
   sensors_event_t event; 
   mma.getEvent(&event);
   
   gyro.read();
+    
+  double accel_convert = 9.8;
+  double deg_to_rad = 0.0174;
 
   /* Display the results (acceleration is measured in m/s^2) */
-  Serial.print(event.acceleration.x);Serial.print("\t");
-  Serial.print(event.acceleration.y);Serial.print("\t");
-  Serial.print(event.acceleration.z);Serial.print("\t");
+  /* x = y
+  /* y = x
+  */
+  Serial.print(event.acceleration.y*accel_convert);Serial.print("\t");
+  Serial.print(event.acceleration.x*accel_convert);Serial.print("\t");
+  Serial.print(event.acceleration.z*accel_convert);Serial.print("\t");
   
-  Serial.print(gyro.data.x+GYRO_OFFSET_X);Serial.print("\t");
-  Serial.print(gyro.data.y+GYRO_OFFSET_Y);Serial.print("\t");
-  Serial.print(gyro.data.z+GYRO_OFFSET_Z);Serial.print("\t");
+  Serial.print((-gyro.data.x*deg_to_rad)+gyro_x_offset);Serial.print("\t");
+  Serial.print((gyro.data.y*deg_to_rad)-gyro_y_offset);Serial.print("\t");
+  Serial.print((-gyro.data.z*deg_to_rad)-gyro_z_offset);Serial.print("\t");
   Serial.println("");
   
-  delay(200);
+  delay(50);
 }

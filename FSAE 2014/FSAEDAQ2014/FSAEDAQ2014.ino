@@ -15,6 +15,21 @@
                   and used for debugging.
 **************************************************************************/
 
+/**
+ * PINOUT for Custom Header
+ * Left to right, assuming SD port is pointing to the LEFT
+ * 0 - Ground for Accelerometer
+ * 1 - 3.3V for both Accelerometer and Gyroscope (left empty)
+ * 2 - SCL port for A.
+ * 3 - SDA port for A.
+ * GAP
+ * 4 - SAO port for G.
+ * 5 - SDA port for G.
+ * 6 - CS port for G.
+ * 7 - SCL port for G.
+ * 8 - VIN port (left empty)
+ * 9 - Ground for G.
+
 #include <Wire.h>
 #include <Adafruit_MMA8451.h>
 #include <Adafruit_Sensor.h>

@@ -13,13 +13,13 @@ import java.util.Date;
  */
 public class GPSOutput {
     //FIELDS
-    private double longitude= 0;
-    private double latitude = 0;
+    private String longitude;
+    private String latitude;
     private double velocity = 0;
     private Date time;
     
    //CONSTRUCTOR
-    public GPSOutput(double longInput, double latInput, 
+    public GPSOutput(String longInput, String latInput, 
                      double velInput, Date timeInput){
         longitude = longInput;
         latitude = latInput;
@@ -27,12 +27,16 @@ public class GPSOutput {
         time = timeInput;
     }
     //longitude in double
-    public double getLongitude(){
+    public String getLongitude(){
         return longitude;
     }
     //longitude as double
-    public double getLatitude(){
+    public String getLatitude(){
         return latitude;
+    }
+    
+    public String mapInput(){
+        return longitude+", "+latitude;
     }
     
     //velocity as ddouble

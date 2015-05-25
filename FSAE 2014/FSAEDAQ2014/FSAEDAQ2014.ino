@@ -29,6 +29,7 @@
  * 7 - SCL port for G.
  * 8 - VIN port (left empty)
  * 9 - Ground for G.
+**/
 
 #include <Wire.h>
 #include <Adafruit_MMA8451.h>
@@ -38,7 +39,7 @@
 #include <SPI.h>
 
 // Comment this next line to use SPI
-//#define USE_I2C
+#define USE_I2C
 
 #ifdef USE_I2C
 // The default constructor uses I2C
@@ -55,40 +56,19 @@ Adafruit_L3GD20 gyro(GYRO_CS, GYRO_DO, GYRO_DI, GYRO_CLK);
 
 //delay time in hertz
 //Set Baud Rate
-const int hertz = 20;
+const int hertz = 10;
 const int DELAY_TIME = 1000/hertz;
 
 //instantiate accel object
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
-
-//Digital pin for hall effect magnetic sensor
-const int HALL_EFFECT_PIN = 3;
-
-//Analog pin for steering angle
-const int STEER_POT_PIN = A3;
-
-//sensor holding values
-int hallEffectReading = 0;
-int steerPotReading = 0;
-
-//velocity variables
-//WHEEL_DISTANCE based off of distance between magnets on wheel
-const double WHEEL_DISTANCE = 14.25;
-int time = 0;
-int time_init = 0;
-double velocity = 0;
-
-
-//slip angle variables
-//////////////////////
 
 //SD card variables
 File dataFile;
 String DataString;
 const int chipSelect = 10;
 
+double time_init;
 
-boolean same_magnet = false;
 /*
  * Name: setup()
  * Purpose: instantiate serial port, check for proper
@@ -128,44 +108,45 @@ void setup(void)
     //Serial.println("Card failed to instantiate");
     return;
   }
-
-  dataFile = SD.open("datalog.txt", FILE_WRITE);
+  
+  /*
+  char filename[16]; /* string used to hold name of file log data
+                        is being sent to */
+  /*strcpy(filename, "DATALOG00.TXT");
+  for (uint8_t index = 0; index < 100; index++)
+  {
+    /* update new log file names to avoid overwrites */
+   // filename[6] = '0' + index/10;
+  //  filename[7] = '0' + index%10;
+    
+    /* create if does not exist */
+   // if (!SD.exists(filename))
+  // {
+  //    break;
+  //  }
+  //}
+  
+  dataFile = SD.open("DATALOG.txt", FILE_WRITE);
   if (! dataFile)
   {
     //Serial.println("error opening datalog.txt");
     //cannot write data
   }
 
-  DataString = String("Acceleration (g's) | Velocity (ft/s)| Gyroscope (deg/s)");
+  DataString = String("Acceleration (g's) | Gyroscope (deg/s)");
   dataFile.println(DataString);
   dataFile.flush();
   
-  DataString = String("X"+"\t"+"Y"+"\t"+"Z"+"\t"+"FT/S"+"\t"+"X"+"\t"+"Y"+"\t"+"Z"+"\t"+"ms");
+  DataString = String("X")+"\t"+"Y"+"\t"+"Z"+"\t"+"X"+"\t"+"Y"+"\t"+"Z"+"\t"+"ms";
   dataFile.println(DataString);
   dataFile.flush();
 }
-
-/*
- * Name: Velocity
- * Hall effect sensors are 1022 or 1023 when idle.
- * Once a magnet passes, sensor reads around 0 or 1. Check
- * time between magnet passes, use d=r/t formula to calculate
- * speed.
- */
 
 /*
  * Name: Acceleration
  * MMA8451 Accelerometer returns values based on code
  * written in libraries. Values are returned as doubles
  * and are convertd to ints to be concatenated into strings.
- */
-
-/*
- * Name: Slip Angle
- * Potentiometer connected to detect steering angle
- * is coupled with data from the L3DG20 Gyroscope
- * to calculate slip angle of vehicle. Calculations are
- * done in post-processing Excell formulas.
  */
 
 /*
@@ -177,40 +158,7 @@ void setup(void)
 
 void loop()
 {
-  /******************************************
-  /* VELOCITY
-   ******************************************/
-  hallEffectReading = digitalRead(HALL_EFFECT_PIN);
-
-  if ((hallEffectReading == 1) && (!same_magnet)
-  {
-    //take initial time stamp
-    time_init = millis();
-    same_magnet = true;
-    
-    if (hallEffectReading == 0)
-    {
-      same_magnet = false;
-    }
-    else if (same_magnet)
-    {
-      same_magnet = true;
-    }
-    
-    if (!same_magnet)
-    {
-      if (hallEffectReading == 1)
-      {
-        time = millis();
-        
-        velocity = WHEEL_DISTANE/(time-time_init);
-        
-        same_magnet = false;
-      }
-    }
-    
-  }
-
+  time_init = millis();
   /******************************************
   /* ACCELERATION
    ******************************************/
@@ -221,24 +169,28 @@ void loop()
   mma.getEvent(&event);
 
   /******************************************
-  /* SLIP ANGLE
+  /* GYROSCOPE
    ******************************************/
   gyro.read();
-
-  //some calculation for slip angle....
 
   /******************************************
   /* WRITE TO SD CARD
    ******************************************/
   //concatenate all data into one string to print to SD
-  DataString = event.acceleration.x + "\t" + event.acceleration.y + "\t" + event.acceleration.z + "\t" +
-               "\t" + velocity + "\t" + gyro.data.x + "\t" + gyro.data.y + "\t" + gyro.data.z + "\t" +
-               "\t" + millis();
+  DataString = String(event.acceleration.x) + "\t" + event.acceleration.y + "\t" + event.acceleration.z + 
+                "\t" + gyro.data.x + "\t" + gyro.data.y + "\t" + gyro.data.z + "\t" + millis();
                
   dataFile.println(DataString);
   dataFile.flush(); //save after every line
 
-  //Delay based off of max RPM (2000RPM at 80mph)
-  delay(DELAY_TIME);
+  /* Wait for the time */
+  while( millis() < (time_init+DELAY_TIME))
+  {
+    /*Delay...*/
+    if (millis() > (time_init+DELAY_TIME))
+    {
+      break;
+    }
+  }
 }
 

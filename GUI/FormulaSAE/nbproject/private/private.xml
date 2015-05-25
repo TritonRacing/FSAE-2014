@@ -5,7 +5,9 @@
         <group>
             <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/GPSOutput.java</file>
             <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/nmeaToLLV.java</file>
-            <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/FormulaSAE.java</file>
+            <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/AccelOutput.java</file>
+            <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/GyroOutput.java</file>
+            <file>file:/Users/amirhajimirsadeghi/Desktop/GitHub/SAE/FSAE-2014/GUI/FormulaSAE/src/formulasae/GyroAccelData.java</file>
         </group>
     </open-files>
 </project-private>

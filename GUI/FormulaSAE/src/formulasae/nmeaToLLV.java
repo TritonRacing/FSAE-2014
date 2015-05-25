@@ -36,7 +36,8 @@ public class nmeaToLLV {
         ArrayList<String> strLines = new ArrayList<>();
         String strLine;
         int lineCount=0;
-
+        
+        String firstLine = br.readLine();
         //Read File Line By Line
         while ((strLine = br.readLine()) != null)   {
             strLines.add(strLine);
@@ -45,7 +46,12 @@ public class nmeaToLLV {
         }
         fileOutputs = new GPSOutput[lineCount];
         for(int i =0; i< strLines.size();i++){
-            fileOutputs[i] = extractData(strLines.get(i));
+            String[] nmeaArray = strLines.get(i).split(",");
+            
+            if(nmeaArray[2].toLowerCase().equals("v")){
+                continue;
+            }
+            fileOutputs[i] = extractData(nmeaArray);
         }
         //Close the input stream
         br.close();
@@ -54,17 +60,18 @@ public class nmeaToLLV {
           to extract data from each sentence*/
     }
     
-    final GPSOutput extractData(String nmeaSentence){
+    final GPSOutput extractData(String[] sentenceArray){
         
-        //Array to hold different parts of the sentence
-        String[] sentenceArray = nmeaSentence.split(",");
 
         //EXTRACT TIME FROM SENTENCE
         String[] fullTimeComp = sentenceArray[1].split(".");
         
-        //handle milliseconds
-        int millisecond = Integer.parseInt(fullTimeComp[1]);
-
+        int millisecond = 0;
+        
+        if(fullTimeComp.length > 1){
+            //handle milliseconds
+            millisecond = Integer.parseInt(fullTimeComp[1]);
+        }
         //handle other time
         int fullTime = Integer.parseInt(fullTimeComp[0]);
         int second = fullTime%100;
@@ -92,24 +99,24 @@ public class nmeaToLLV {
         timeHolder.set(Calendar.MILLISECOND,millisecond);
         Date time = timeHolder.getTime();
         
-        //initialize longitude Value
-        String longVal = sentenceArray[3];
-        longVal = longVal.substring(0,2)+" "+longVal.substring(2,longVal.length());
+        //initialize latitude Value
+        String latitudeVal = sentenceArray[3];
+        latitudeVal = latitudeVal.substring(0,2)+" "+latitudeVal.substring(2,latitudeVal.length());
         if(sentenceArray[4].equals("N")){
-            longVal = "+"+longVal;
+            latitudeVal = "+"+latitudeVal;
         }
         else{
-            longVal = "-"+longVal;
+            latitudeVal = "-"+latitudeVal;
         }
         
-        //initialize latitude value
-        String latVal = sentenceArray[5];
-        latVal = latVal.substring(0,3)+" "+latVal.substring(3,latVal.length());
+        //initialize longitude value
+        String longitudeVal = sentenceArray[5];
+        longitudeVal = longitudeVal.substring(0,3)+" "+longitudeVal.substring(3,longitudeVal.length());
         if(sentenceArray[6].equals("E")){
-            latVal = "+"+latVal;
+            longitudeVal = "+"+longitudeVal;
         }
         else{
-            latVal = "-"+latVal;
+            longitudeVal = "-"+longitudeVal;
         }
         
         //Velocity Calculator
@@ -118,7 +125,10 @@ public class nmeaToLLV {
         double mphAccurate = knots*1.15078;
         int mphRounded = (int)mphAccurate;
         
-        return new GPSOutput(longVal,latVal,mphRounded,time);
+        return new GPSOutput(latitudeVal,longitudeVal,mphRounded,time);
     }
     
+    public GPSOutput[] getOutputs(){
+        return fileOutputs;
+    }
 }
